@@ -1,5 +1,5 @@
 """
-make_demo.py - copy the Python files and zones.geojson into demo.html.
+make_demo.py - copy the Python files and ../data/zones.geojson into demo.html.
 
 demo.html runs this repo's Python in the browser (Pyodide). So that it also
 works when opened straight from disk, it carries a copy of each file in a
@@ -16,7 +16,9 @@ BLOCK = re.compile(r'(<script type="[^"]+" data-file="([^"]+)">)(.*?)(</script>)
 
 
 def fill(m):
-    text = (HERE / m.group(2)).read_text(encoding="utf-8")
+    name = m.group(2)
+    src = HERE.parent / "data" / name if name.endswith(".geojson") else HERE / name
+    text = src.read_text(encoding="utf-8")
     if "</script" in text.lower() or "<!--" in text:
         raise ValueError(f"{m.group(2)} contains text that would break the HTML")
     return f"{m.group(1)}\n{text}{m.group(4)}"
