@@ -23,22 +23,12 @@ into two flows:
 not for buildings (the radar measures the distance itself). Velocity matters
 for both, because it sets the braking and turning distances.
 
-```mermaid
-flowchart LR
-  gnss["GNSS epoch<br/>pseudorange, Doppler"] --> fix["Klobuchar iono, then<br/>gnss_lib_py wls()<br/>p, HDOP, σ_h"]
-  gnss --> dop["Doppler LS, same H<br/>v_gnss"]
-  imu["IMU<br/>accel (body), heading"] --> blend["weighted<br/>v = w·v_gnss + (1−w)·v_imu"]
-  dop --> blend
-  geo["zones.geojson<br/>lat, lon"] --> zone["zone threat<br/>d, margin r + k·σ_h"]
-  fix --> zone
-  radar["radar<br/>range, bearing"] --> frames["sensor → body → NED<br/>rotation matrices"]
-  imu --> frames
-  frames --> obs["obstacle threat<br/>d = range, margin r + k·σ_range"]
-  zone --> dec["boundary.decide<br/>gap vs braking / turning distance"]
-  obs --> dec
-  blend --> dec
-  dec --> cmd["CLEAR · BRAKE · TURN · RETURN"]
-```
+![Flowchart: one epoch of the guardrail](docs/flowchart.png)
+
+*One second of the loop, as the code on `main` runs it. Flow 1 (blue) gives the
+GNSS + IMU position, velocity and σ_h and compares them with the zone map. Flow 2
+(purple) rotates radar readings from sensor to body to NED. Both meet only at the
+decision in `boundary.py`. The same chart as a page: [`docs/flowchart.html`](docs/flowchart.html).*
 
 ## Course topics in the code
 
@@ -73,6 +63,8 @@ v_allow  = a·(√(Δt² + 2·gap/a) − Δt)          fastest v_c that can stil
 Below `v = √(2aR) = 15.8 m/s` braking is the shorter way out; above it,
 turning is (`python params.py` prints the table).
 
+![Braking vs turning distance](docs/brake_vs_turn.png)
+
 **Besides braking and turning distance**, the required distance already has:
 
 * the **reaction distance** `v·Δt` (GNSS period + compute + reaction). At 10 m/s this is 16 m of the 36 m.
@@ -98,6 +90,7 @@ Not modelled yet (see FUTURE_WORK.md):
 | `demo.html` | Browser demo. It runs the Python files above with Pyodide. |
 | `make_demo.py` | Copies the `.py` files and `zones.geojson` into `demo.html`. |
 | `FUTURE_WORK.md` | Features removed in the rebuild, as an improvement plan. |
+| `docs/` | The flowchart and the braking/turning chart (PNG for slides, HTML page). |
 
 ## Run
 
@@ -165,3 +158,60 @@ The world is simulated: white-noise GNSS errors, one sky mask instead of real
 building shadows, no NLOS, a radar that sees everything in range, level
 flight, no wind. The guardrail is not a path planner: if the pilot keeps
 pushing into a zone, the aircraft waits at the margin. See `FUTURE_WORK.md`.
+
+## Project status and session summary
+
+### History
+
+| when | commit | what |
+|---|---|---|
+| first version | `3bd77f0`, `f156a3b` | Full SPP geofence: own least squares, chi-square fault detection and exclusion, Kalman velocity filter, NLOS street canyon, distance field, RETURN / RETRACE / HOLD, browser game and slide demo. Too much for an undergrad course. |
+| rebuild session (3 Nov 2026) | `e8e351c` | Rebuilt from nothing as the lightweight version described above. |
+| follow-up session (4–16 Nov 2026) | this commit | `main` moved forward to the rebuild (old code kept in history at `f156a3b`); flowchart and chart added; this README section. |
+
+### What the rebuild was asked to do, and what was built
+
+The brief: an undergrad navigation course project (GNSS, least squares, SPP,
+Doppler, ionosphere error, frame conversion) on LAE with eVTOL, because LAE in
+Singapore and Hong Kong needs this kind of guardrail. Start from nothing, keep
+only useful old code, and add no maths beyond the course.
+
+| asked for | built | |
+|---|---|---|
+| Undergrad level, no new maths | Only course topics. FDE, Kalman filter, NLOS canyon and distance field removed. | done |
+| Removed features as a plan | `FUTURE_WORK.md`: 23 picked items in 6 phases, each pointing to the old code in `f156a3b`. | done |
+| Two flows in `location.py` | Flow 1 GNSS → eSUA GeoJSON zones. Flow 2 one "magic radar" → body frame → NED for buildings. | done |
+| Existing GitHub repo for GNSS, least modification | Stanford NAV Lab `gnss_lib_py` subset, function bodies unchanged. | done |
+| Position, velocity, acceleration from GNSS | Position and velocity from GNSS; **acceleration from the IMU** (differencing noisy GNSS velocity adds noise). | changed |
+| GNSS + IMU weighted | `v = w·v_gnss + (1−w)·v_imu`, inverse-variance weight. | done |
+| `boundary.py` with obstacle distance; braking, turning, anything else? | One decision for both threats. Added reaction distance `v·Δt` and the margin `R + k·σ`. | done |
+| HTML: one purpose, map, one obstacle, drone with sensor, GNSS, IMU; a few parameters in a dropdown, rest predefined | `demo.html` runs the real Python in Pyodide. 6 page parameters in a closed dropdown; turning radius, braking, sensor and IMU are read-only. | done |
+| `params.py` unchanged | The HTML never edits it, but the file was **rewritten** for the new design (eVTOL radius 3 m, braking, turning radius, radar). | changed |
+
+### What it can do now
+
+* Run four scripted flights from the command line (`python main.py`): BRAKE at a zone, TURN at a building at 20 m/s, a wider margin in a street canyon, IMU dead reckoning through a GNSS outage.
+* SPP with Klobuchar ionosphere correction, HDOP → σ_h, Doppler velocity, GNSS/IMU velocity weighting.
+* Load no-entry zones from GeoJSON and convert lat/lon → NED.
+* Convert radar readings sensor → body → NED with rotation matrices.
+* Decide CLEAR / BRAKE / TURN / RETURN (HOLD before the first fix) from reaction, braking and turning distance, and cap the command.
+* Show all of this live in the browser (`demo.html`), with the real Python doing every calculation.
+* Tested: 90 flights (9 cases × 10 seeds, up to 25 m/s, Δt = 3 s, σ_UERE = 10 m with k = 2), no breach.
+
+### What it cannot do (yet)
+
+* **Real data.** Everything is simulated; no RINEX or UrbanNav input (FUTURE_WORK #20).
+* **Trust checks on the fix.** No residual test, so a reflected (NLOS) signal can bias the fix without HDOP noticing (#1, #2).
+* **Realistic errors.** White-noise GNSS, one sky-mask angle instead of real building shadows, GPS only, no troposphere or Earth rotation in the simulator (#5–#8).
+* **Better fusion.** Velocity uses a fixed one-step weight, not a Kalman filter; position is not fused with the IMU (#9–#11).
+* **Real sensors.** One 360° radar that sees everything within 150 m; no sensor network, noise model, missed detections or obstacle memory (#13–#16).
+* **Speed limit from sensor range.** A building is only seen at 150 m, which caps safe speed at about 23 m/s; not enforced (#15).
+* **3D and wind.** Level flight only; no altitude bands, climbing escape or wind (#19).
+* **Path planning.** It is a guardrail: if the pilot keeps pushing into a zone, the aircraft waits at the margin.
+* **Offline demo.** `demo.html` loads Pyodide and numpy (about 10 MB) from cdn.jsdelivr.net. The page was tested against the real Pyodide runtime and with the same Python run locally, but never fully in a browser with numpy from the CDN, because the build container blocked it. Check it on the presentation network first (#23).
+
+### Design choices to be able to explain
+
+* Turning distance is `R·(1 − sin α)`, where α is how far the aircraft has already turned (head-on it is just R). With plain R, a turn was abandoned after one second.
+* The building margin uses the radar's σ, not GNSS σ_h, because the radar measures the distance directly.
+* k = 3.03 comes from accepting a 10⁻⁴ chance of the error exceeding k·σ_h (circular Gaussian: `P = exp(−k²)`).
