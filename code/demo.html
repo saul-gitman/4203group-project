@@ -1259,7 +1259,11 @@ import numpy as np
 import params as P
 from location import FRAME
 
-ZONES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zones.geojson")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# Repo layout keeps the zone map in data/; demo.html (Pyodide) puts it next to this file.
+ZONES_FILE = next((p for p in (os.path.join(_HERE, "..", "data", "zones.geojson"),
+                               os.path.join(_HERE, "zones.geojson")) if os.path.exists(p)),
+                  os.path.join(_HERE, "zones.geojson"))
 
 
 # --------------------------------------------------------------------------
