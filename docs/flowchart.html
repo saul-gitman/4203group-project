@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LAE Guardrail Flowchart</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; figures break out wider and scroll sideways on phones. */
+:root{
+  --bg:#f4f6f8; --paper:#ffffff; --ink:#16202b; --muted:#5a6573; --line:#c3ccd6;
+  --f1:#1b5fbf; --f1t:#e7eefa; --f2:#7d3cb8; --f2t:#f1e9f9; --dect:#eceff3;
+  --ok:#1d7f47; --okt:#e3f3ea; --warn:#a35f00; --warnt:#fbf0dc; --turn:#0b7880; --turnt:#def2f3; --bad:#b33327; --badt:#f8e4e1;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --paper:#192029; --ink:#e3e8ee; --muted:#9aa5b2; --line:#3a4654;
+  --f1:#78aeff; --f1t:#16253a; --f2:#c592f2; --f2t:#251a33; --dect:#1a2029;
+  --ok:#55c585; --okt:#15301f; --warn:#e6a543; --warnt:#33260f; --turn:#45c7cd; --turnt:#0f2e30; --bad:#f17b6c; --badt:#3a1a17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --paper:#192029; --ink:#e3e8ee; --muted:#9aa5b2; --line:#3a4654;
+  --f1:#78aeff; --f1t:#16253a; --f2:#c592f2; --f2t:#251a33; --dect:#1a2029;
+  --ok:#55c585; --okt:#15301f; --warn:#e6a543; --warnt:#33260f; --turn:#45c7cd; --turnt:#0f2e30; --bad:#f17b6c; --badt:#3a1a17; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:40px}
+header{display:grid;gap:8px;max-width:70ch}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:600 clamp(28px,4vw,40px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:600 22px/1.2 var(--display);margin:0;text-wrap:balance}
+p{margin:0;max-width:70ch}
+code,.mono{font-family:var(--mono);font-size:.9em}
+section{display:grid;gap:14px;min-width:0}
+figure{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+.scroll{overflow-x:auto}
+.scroll svg{display:block;width:100%;height:auto;min-width:760px}
+.chart svg{display:block;width:100%;max-width:640px;height:auto}
+figcaption{color:var(--muted);font-size:14px;max-width:80ch}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1.5px solid}
+/* SVG marks */
+svg text{font-family:var(--body)}
+.t{font:600 13px var(--body);fill:var(--ink)}
+.tb{font:600 13.5px var(--body);fill:var(--ink)}
+.ts{font:600 13px var(--mono);fill:var(--ink);letter-spacing:.06em}
+.m{font:11.5px var(--mono);fill:var(--muted)}
+.lb{font:12px var(--body);fill:var(--muted)}
+.lb2{font:italic 12px var(--body);fill:var(--f2)}
+.bl1{font:600 11.5px var(--mono);fill:var(--f1);letter-spacing:.04em}
+.bl2{font:600 11.5px var(--mono);fill:var(--f2);letter-spacing:.04em}
+.bl3{font:600 11.5px var(--mono);fill:var(--muted);letter-spacing:.04em}
+.band1{fill:var(--f1t);stroke:none}
+.band2{fill:var(--f2t);stroke:none}
+.band3{fill:var(--dect);stroke:none}
+.bx{fill:var(--paper);stroke:var(--line);stroke-width:1.2}
+.bx1{fill:var(--paper);stroke:var(--f1);stroke-width:1.2}
+.bx2{fill:var(--paper);stroke:var(--f2);stroke-width:1.2}
+.out1{fill:var(--paper);stroke:var(--f1);stroke-width:2.4}
+.out2{fill:var(--paper);stroke:var(--f2);stroke-width:2.4}
+.src{fill:var(--bg);stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 3}
+.dm{fill:var(--paper);stroke:var(--ink);stroke-width:1.2}
+.sOk{fill:var(--okt);stroke:var(--ok);stroke-width:2}
+.sWarn{fill:var(--warnt);stroke:var(--warn);stroke-width:2}
+.sTurn{fill:var(--turnt);stroke:var(--turn);stroke-width:2}
+.sBad{fill:var(--badt);stroke:var(--bad);stroke-width:2}
+.ar{fill:none;stroke:var(--ink);stroke-width:1.3}
+.dash{stroke-dasharray:5 4;stroke:var(--muted)}
+.ahp{fill:var(--ink)}
+.grid{stroke:var(--line);stroke-width:1}
+.strong{stroke:var(--muted);stroke-dasharray:4 4}
+.axl{stroke:var(--ink);stroke-width:1}
+.ax{font:12px var(--body);fill:var(--muted)}
+.lnB{fill:none;stroke:var(--warn);stroke-width:2.5}
+.lnT{fill:none;stroke:var(--turn);stroke-width:2.5}
+.lnR{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:3 3}
+.lbB{font:600 12.5px var(--body);fill:var(--warn)}
+.lbT{font:600 12.5px var(--body);fill:var(--turn)}
+.lbR{font:12px var(--body);fill:var(--muted)}
+.dot{fill:var(--ink)}
+/* tables */
+.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{font:600 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td:first-child{white-space:nowrap;font-family:var(--mono);font-size:13px}
+.pill{display:inline-block;font:600 11px var(--mono);padding:2px 8px;border-radius:99px;letter-spacing:.04em}
+.yes{background:var(--okt);color:var(--ok)}
+.part{background:var(--warnt);color:var(--warn)}
+table.brief td:first-child{white-space:normal;font-family:var(--body);font-weight:600;font-size:14px;min-width:150px}
+ol.talk{margin:0;padding-left:22px;display:grid;gap:8px;max-width:75ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Navigation course project · eVTOL in low-altitude airspace</div>
+  <h1>LAE Guardrail Flowchart</h1>
+  <p>What the code on <code>main</code> does each second. Two navigation flows measure two kinds of threat in different ways, and one rule in <code>boundary.py</code> turns both into a single safe command.</p>
+</header>
+
+<section>
+  <h2>One epoch, end to end</h2>
+  <figure>
+    <div class="legend">
+      <span><i class="sw" style="border-color:var(--f1);background:var(--f1t)"></i>Flow 1: GNSS + IMU, absolute position vs the zone map</span>
+      <span><i class="sw" style="border-color:var(--f2);background:var(--f2t)"></i>Flow 2: radar, relative distance to buildings</span>
+      <span><i class="sw" style="border-color:var(--muted);border-style:dashed"></i>simulated input or file</span>
+      <span><i class="sw" style="border-color:var(--ink);border-width:2.4px"></i>what each flow hands to the decision</span>
+    </div>
+    <div class="scroll">
+      <svg viewBox="0 0 1080 1470" role="img" aria-label="Flowchart: GNSS and IMU produce position, velocity and sigma_h for zone threats; radar readings rotated sensor to body to NED produce obstacle threats; both go through the same braking, turning and allowed-speed test, which picks RETURN, CLEAR, TURN or BRAKE, caps the command and flies it, then repeats every second.">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahp" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="band1" x="12" y="100" width="640" height="740" rx="10"/>
+<rect class="band2" x="684" y="100" width="388" height="740" rx="10"/>
+<rect class="band3" x="12" y="860" width="1060" height="530" rx="10"/>
+<text class="bl1" x="26" y="120" text-anchor="start">FLOW 1 · GNSS + IMU → zones</text>
+<text class="bl2" x="698" y="120" text-anchor="start">FLOW 2 · radar</text>
+<text class="bl3" x="26" y="880" text-anchor="start">DECISION · one rule for both threats   (boundary.py)</text>
+<text class="bl3" x="20" y="50" text-anchor="start">sim.py</text>
+<text class="bl3" x="20" y="66" text-anchor="start">simulated world</text>
+<rect class="src" x="200" y="30" width="270" height="56" rx="6"/>
+<text class="t" x="335.0" y="54.5" text-anchor="middle">GNSS receiver</text>
+<text class="m" x="335.0" y="70.5" text-anchor="middle">pseudorange ρ, Doppler, sat pos/vel</text>
+<rect class="src" x="500" y="30" width="140" height="56" rx="6"/>
+<text class="t" x="570.0" y="54.5" text-anchor="middle">IMU</text>
+<text class="m" x="570.0" y="70.5" text-anchor="middle">accel, heading</text>
+<rect class="src" x="700" y="30" width="360" height="56" rx="6"/>
+<text class="t" x="880.0" y="54.5" text-anchor="middle">Magic radar (360°, 150 m)</text>
+<text class="m" x="880.0" y="70.5" text-anchor="middle">range, bearing per building</text>
+<polyline class="ar" points="335,86 335,125" marker-end="url(#ah)"/>
+<polygon class="dm" points="335,126 445,160 335,194 225,160"/>
+<text class="t" x="335" y="157" text-anchor="middle">≥ 4 satellites</text>
+<text class="m" x="335" y="173" text-anchor="middle">above 10° mask?</text>
+<polyline class="ar" points="225,160 95,160 95,216" marker-end="url(#ah)"/>
+<text class="lb" x="200" y="153" text-anchor="end">no</text>
+<text class="lb" x="343" y="210" text-anchor="start">yes</text>
+<polyline class="ar" points="335,194 335,216" marker-end="url(#ah)"/>
+<rect class="bx1" x="20" y="220" width="150" height="84" rx="6"/>
+<text class="t" x="95.0" y="242.5" text-anchor="middle">Dead reckoning</text>
+<text class="m" x="95.0" y="258.5" text-anchor="middle">v = v_IMU</text>
+<text class="m" x="95.0" y="274.5" text-anchor="middle">p ← p + v·dt</text>
+<text class="m" x="95.0" y="290.5" text-anchor="middle">σ_h grows ½σ_a t²</text>
+<rect class="bx1" x="200" y="220" width="270" height="56" rx="6"/>
+<text class="t" x="335.0" y="244.5" text-anchor="middle">Klobuchar ionosphere</text>
+<text class="m" x="335.0" y="260.5" text-anchor="middle">ρ − I_iono  (broadcast α, β)</text>
+<polyline class="ar" points="335,276 335,302" marker-end="url(#ah)"/>
+<rect class="bx1" x="200" y="306" width="270" height="56" rx="6"/>
+<text class="t" x="335.0" y="330.5" text-anchor="middle">SPP least squares · wls()</text>
+<text class="m" x="335.0" y="346.5" text-anchor="middle">→ p (ECEF → NED), clock bias</text>
+<polyline class="ar" points="335,362 335,388" marker-end="url(#ah)"/>
+<rect class="bx1" x="200" y="392" width="270" height="56" rx="6"/>
+<text class="t" x="335.0" y="416.5" text-anchor="middle">Geometry H = [−e, 1]</text>
+<text class="m" x="335.0" y="432.5" text-anchor="middle">Q = (HᵀH)⁻¹ → σ_h = HDOP·σ_UERE</text>
+<polyline class="ar" points="335,448 335,474" marker-end="url(#ah)"/>
+<rect class="bx1" x="200" y="478" width="270" height="56" rx="6"/>
+<text class="t" x="335.0" y="502.5" text-anchor="middle">Doppler least squares</text>
+<text class="m" x="335.0" y="518.5" text-anchor="middle">same H → v_GNSS, clock drift</text>
+<polyline class="ar" points="570,86 570,126" marker-end="url(#ah)"/>
+<rect class="bx1" x="500" y="130" width="140" height="56" rx="6"/>
+<text class="t" x="570.0" y="146.5" text-anchor="middle">IMU velocity</text>
+<text class="m" x="570.0" y="162.5" text-anchor="middle">a: body → NED</text>
+<text class="m" x="570.0" y="178.5" text-anchor="middle">v_IMU = v + a·dt</text>
+<polyline class="ar" points="570,186 570,560" marker-end="url(#ah)"/>
+<text class="lb" x="578" y="380" text-anchor="start">v_IMU</text>
+<polyline class="ar" points="335,534 335,560" marker-end="url(#ah)"/>
+<rect class="bx1" x="200" y="564" width="440" height="60" rx="6"/>
+<text class="t" x="420.0" y="582.5" text-anchor="middle">Weighted velocity</text>
+<text class="m" x="420.0" y="598.5" text-anchor="middle">v = w·v_GNSS + (1−w)·v_IMU</text>
+<text class="m" x="420.0" y="614.5" text-anchor="middle">w = σ²_IMU / (σ²_IMU + σ²_GNSS)</text>
+<polyline class="ar" points="95,304 95,656" marker-end="url(#ah)"/>
+<text class="lb" x="103" y="480" text-anchor="start">GNSS outage</text>
+<polyline class="ar" points="420,624 420,656" marker-end="url(#ah)"/>
+<rect class="out1" x="20" y="660" width="620" height="56" rx="6"/>
+<text class="tb" x="330.0" y="684.5" text-anchor="middle">Navigation state</text>
+<text class="m" x="330.0" y="700.5" text-anchor="middle">position p, velocity v, horizontal error σ_h</text>
+<polyline class="ar" points="420,716 420,756" marker-end="url(#ah)"/>
+<text class="lb" x="428" y="742" text-anchor="start">p, σ_h</text>
+<rect class="src" x="20" y="760" width="150" height="64" rx="6"/>
+<text class="t" x="95.0" y="780.5" text-anchor="middle">zones.geojson</text>
+<text class="m" x="95.0" y="796.5" text-anchor="middle">eSUA polygons</text>
+<text class="m" x="95.0" y="812.5" text-anchor="middle">lat/lon → NED</text>
+<polyline class="ar" points="170,792 196,792" marker-end="url(#ah)"/>
+<rect class="out1" x="200" y="760" width="440" height="64" rx="6"/>
+<text class="tb" x="420.0" y="780.5" text-anchor="middle">Zone threat</text>
+<text class="m" x="420.0" y="796.5" text-anchor="middle">d = distance p → polygon edge (− inside)</text>
+<text class="m" x="420.0" y="812.5" text-anchor="middle">margin = R_drone + k·σ_h</text>
+<polyline class="ar" points="880,86 880,126" marker-end="url(#ah)"/>
+<rect class="bx2" x="700" y="130" width="360" height="56" rx="6"/>
+<text class="t" x="880.0" y="154.5" text-anchor="middle">Sensor frame</text>
+<text class="m" x="880.0" y="170.5" text-anchor="middle">(range, bearing) → unit vector</text>
+<polyline class="ar" points="880,186 880,216" marker-end="url(#ah)"/>
+<rect class="bx2" x="700" y="220" width="360" height="56" rx="6"/>
+<text class="t" x="880.0" y="244.5" text-anchor="middle">× R_bs  (mount angle)</text>
+<text class="m" x="880.0" y="260.5" text-anchor="middle">sensor frame → body frame</text>
+<polyline class="ar" points="880,276 880,302" marker-end="url(#ah)"/>
+<rect class="bx2" x="700" y="306" width="360" height="56" rx="6"/>
+<text class="t" x="880.0" y="330.5" text-anchor="middle">× R_nb  (heading)</text>
+<text class="m" x="880.0" y="346.5" text-anchor="middle">body frame → NED</text>
+<polyline class="ar dash" points="640,50 670,50 670,334 696,334" marker-end="url(#ah)"/>
+<text class="lb" x="664" y="200" text-anchor="end">heading</text>
+<polyline class="ar" points="880,362 880,756" marker-end="url(#ah)"/>
+<text class="lb" x="888" y="560" text-anchor="start">range d, direction u</text>
+<text class="lb2" x="888" y="578" text-anchor="start">no GNSS needed</text>
+<rect class="out2" x="700" y="760" width="360" height="64" rx="6"/>
+<text class="tb" x="880.0" y="780.5" text-anchor="middle">Obstacle threat</text>
+<text class="m" x="880.0" y="796.5" text-anchor="middle">d = radar range</text>
+<text class="m" x="880.0" y="812.5" text-anchor="middle">margin = R_drone + k·σ_range</text>
+<polyline class="ar" points="420,824 420,900" marker-end="url(#ah)"/>
+<polyline class="ar" points="880,824 880,900" marker-end="url(#ah)"/>
+<rect class="bx" x="40" y="904" width="1000" height="96" rx="6"/>
+<text class="t" x="540" y="928" text-anchor="middle">For each threat  (v from Flow 1, Δt = 1.6 s latency, a = 2.5 m/s², R = 50 m)</text>
+<text class="lb" x="123.33333333333333" y="958" text-anchor="middle">closing speed</text>
+<text class="m" x="123.33333333333333" y="978" text-anchor="middle">v_c = −v·n̂</text>
+<text class="lb" x="290.0" y="958" text-anchor="middle">room left</text>
+<text class="m" x="290.0" y="978" text-anchor="middle">gap = d − margin</text>
+<text class="lb" x="456.66666666666663" y="958" text-anchor="middle">reaction</text>
+<text class="m" x="456.66666666666663" y="978" text-anchor="middle">d_react = v_c·Δt</text>
+<text class="lb" x="623.3333333333333" y="958" text-anchor="middle">braking</text>
+<text class="m" x="623.3333333333333" y="978" text-anchor="middle">d_react + v_c²/2a</text>
+<text class="lb" x="790.0" y="958" text-anchor="middle">turning</text>
+<text class="m" x="790.0" y="978" text-anchor="middle">d_react + R(1−sin α)</text>
+<text class="lb" x="956.6666666666666" y="958" text-anchor="middle">allowed</text>
+<text class="m" x="956.6666666666666" y="978" text-anchor="middle">v_allow: d_brake = gap</text>
+<polyline class="ar" points="540,1000 540,1022" marker-end="url(#ah)"/>
+<rect class="bx" x="370" y="1026" width="340" height="44" rx="6"/>
+<text class="t" x="540.0" y="1052.5" text-anchor="middle">Most urgent threat: max(v_c − v_allow)</text>
+<polyline class="ar" points="540,1070 540,1090 170,1090 170,1108" marker-end="url(#ah)"/>
+<polygon class="dm" points="170,1108 280,1142 170,1176 60,1142"/>
+<text class="t" x="170" y="1139" text-anchor="middle">gap ≤ 0 ?</text>
+<text class="m" x="170" y="1155" text-anchor="middle">inside the margin</text>
+<polyline class="ar" points="280,1142 336,1142" marker-end="url(#ah)"/>
+<text class="lb" x="300" y="1135" text-anchor="start">no</text>
+<polygon class="dm" points="450,1108 560,1142 450,1176 340,1142"/>
+<text class="t" x="450" y="1139" text-anchor="middle">v_c ≤ v_allow ?</text>
+<text class="m" x="450" y="1155" text-anchor="middle">braking still fits</text>
+<polyline class="ar" points="560,1142 616,1142" marker-end="url(#ah)"/>
+<text class="lb" x="580" y="1135" text-anchor="start">no</text>
+<polygon class="dm" points="730,1108 840,1142 730,1176 620,1142"/>
+<text class="t" x="730" y="1139" text-anchor="middle">gap ≥ d_turn ?</text>
+<text class="m" x="730" y="1155" text-anchor="middle">room to turn</text>
+<polyline class="ar" points="840,1142 866,1142" marker-end="url(#ah)"/>
+<text class="lb" x="846" y="1135" text-anchor="start">no</text>
+<rect class="sWarn" x="870" y="1114" width="190" height="56" rx="6"/>
+<text class="ts" x="965.0" y="1138.5" text-anchor="middle">BRAKE</text>
+<text class="m" x="965.0" y="1154.5" text-anchor="middle">closing speed → v_allow</text>
+<polyline class="ar" points="170,1176 170,1206" marker-end="url(#ah)"/>
+<text class="lb" x="178" y="1196" text-anchor="start">yes</text>
+<rect class="sBad" x="75" y="1210" width="190" height="56" rx="6"/>
+<text class="ts" x="170.0" y="1234.5" text-anchor="middle">RETURN</text>
+<text class="m" x="170.0" y="1250.5" text-anchor="middle">back off at 2 m/s</text>
+<polyline class="ar" points="450,1176 450,1206" marker-end="url(#ah)"/>
+<text class="lb" x="458" y="1196" text-anchor="start">yes</text>
+<rect class="sOk" x="355" y="1210" width="190" height="56" rx="6"/>
+<text class="ts" x="450.0" y="1234.5" text-anchor="middle">CLEAR</text>
+<text class="m" x="450.0" y="1250.5" text-anchor="middle">pilot command passes</text>
+<polyline class="ar" points="730,1176 730,1206" marker-end="url(#ah)"/>
+<text class="lb" x="738" y="1196" text-anchor="start">yes</text>
+<rect class="sTurn" x="635" y="1210" width="190" height="56" rx="6"/>
+<text class="ts" x="730.0" y="1234.5" text-anchor="middle">TURN</text>
+<text class="m" x="730.0" y="1250.5" text-anchor="middle">fly along the edge</text>
+<polyline class="ar" points="170,1266 170,1296" marker-end="url(#ah)"/>
+<polyline class="ar" points="450,1266 450,1296" marker-end="url(#ah)"/>
+<polyline class="ar" points="730,1266 730,1296" marker-end="url(#ah)"/>
+<polyline class="ar" points="965,1170 965,1324 884,1324" marker-end="url(#ah)"/>
+<rect class="bx" x="80" y="1300" width="800" height="48" rx="6"/>
+<text class="t" x="480.0" y="1328.5" text-anchor="middle">Cap the closing speed toward every threat at its v_allow → safe command v_cmd</text>
+<text class="lb" x="540" y="1374" text-anchor="middle">If the cap changes a CLEAR command, the state reads BRAKE.  No position yet → HOLD.</text>
+<polyline class="ar" points="480,1348 480,1406" marker-end="url(#ah)"/>
+<rect class="src" x="240" y="1410" width="480" height="52" rx="6"/>
+<text class="t" x="480.0" y="1432.5" text-anchor="middle">sim.World.fly(v_cmd)</text>
+<text class="m" x="480.0" y="1448.5" text-anchor="middle">speed changes ≤ 2.5 m/s², turn radius 50 m</text>
+<polyline class="ar dash" points="240,1436 4,1436 4,8 335,8 335,26" marker-end="url(#ah)"/>
+<text class="lb" x="12" y="1428" text-anchor="start">next epoch (1 s)</text>
+      </svg>
+    </div>
+    <figcaption>The two flows only meet at the decision. A zone exists only on a map, so its margin grows with the GNSS error σ_h. The radar measures the building distance directly, so its margin uses the radar's own error and GNSS never enters it. Velocity v comes from Flow 1 and is used for both threats.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Why both braking and turning</h2>
+  <figure class="chart">
+    <svg viewBox="0 0 640 340" role="img" aria-label="Chart: braking distance grows with speed squared, turning distance grows linearly; they cross at 15.8 m/s, so above that turning needs less room.">
+<line class="grid" x1="60" x2="620" y1="290.0" y2="290.0"/>
+<text class="ax" x="52" y="294.0" text-anchor="end">0</text>
+<line class="grid" x1="60" x2="620" y1="245.0" y2="245.0"/>
+<text class="ax" x="52" y="249.0" text-anchor="end">30</text>
+<line class="grid" x1="60" x2="620" y1="200.0" y2="200.0"/>
+<text class="ax" x="52" y="204.0" text-anchor="end">60</text>
+<line class="grid" x1="60" x2="620" y1="155.0" y2="155.0"/>
+<text class="ax" x="52" y="159.0" text-anchor="end">90</text>
+<line class="grid" x1="60" x2="620" y1="110.0" y2="110.0"/>
+<text class="ax" x="52" y="114.0" text-anchor="end">120</text>
+<line class="grid" x1="60" x2="620" y1="65.0" y2="65.0"/>
+<text class="ax" x="52" y="69.0" text-anchor="end">150</text>
+<line class="grid" x1="60" x2="620" y1="20.0" y2="20.0"/>
+<text class="ax" x="52" y="24.0" text-anchor="end">180</text>
+<text class="ax" x="60.0" y="308" text-anchor="middle">0</text>
+<text class="ax" x="172.0" y="308" text-anchor="middle">5</text>
+<text class="ax" x="284.0" y="308" text-anchor="middle">10</text>
+<text class="ax" x="396.0" y="308" text-anchor="middle">15</text>
+<text class="ax" x="508.0" y="308" text-anchor="middle">20</text>
+<text class="ax" x="620.0" y="308" text-anchor="middle">25</text>
+<line class="axl" x1="60" x2="620" y1="290.0" y2="290.0"/>
+<text class="ax" x="340.0" y="332" text-anchor="middle">closing speed v_c (m/s)</text>
+<text class="ax" x="14" y="155.0" text-anchor="middle" transform="rotate(-90 14 155.0)">distance needed (m)</text>
+<polyline class="lnR" points="60.0,290.0 65.6,289.4 71.2,288.8 76.8,288.2 82.4,287.6 88.0,287.0 93.6,286.4 99.2,285.8 104.8,285.2 110.4,284.6 116.0,284.0 121.6,283.4 127.2,282.8 132.8,282.2 138.4,281.6 144.0,281.0 149.6,280.4 155.2,279.8 160.8,279.2 166.4,278.6 172.0,278.0 177.6,277.4 183.2,276.8 188.8,276.2 194.4,275.6 200.0,275.0 205.6,274.4 211.2,273.8 216.8,273.2 222.4,272.6 228.0,272.0 233.6,271.4 239.2,270.8 244.8,270.2 250.4,269.6 256.0,269.0 261.6,268.4 267.2,267.8 272.8,267.2 278.4,266.6 284.0,266.0 289.6,265.4 295.2,264.8 300.8,264.2 306.4,263.6 312.0,263.0 317.6,262.4 323.2,261.8 328.8,261.2 334.4,260.6 340.0,260.0 345.6,259.4 351.2,258.8 356.8,258.2 362.4,257.6 368.0,257.0 373.6,256.4 379.2,255.8 384.8,255.2 390.4,254.6 396.0,254.0 401.6,253.4 407.2,252.8 412.8,252.2 418.4,251.6 424.0,251.0 429.6,250.4 435.2,249.8 440.8,249.2 446.4,248.6 452.0,248.0 457.6,247.4 463.2,246.8 468.8,246.2 474.4,245.6 480.0,245.0 485.6,244.4 491.2,243.8 496.8,243.2 502.4,242.6 508.0,242.0 513.6,241.4 519.2,240.8 524.8,240.2 530.4,239.6 536.0,239.0 541.6,238.4 547.2,237.8 552.8,237.2 558.4,236.6 564.0,236.0 569.6,235.4 575.2,234.8 580.8,234.2 586.4,233.6 592.0,233.0 597.6,232.4 603.2,231.8 608.8,231.2 614.4,230.6 620.0,230.0"/>
+<polyline class="lnB" points="60.0,290.0 65.6,289.4 71.2,288.7 76.8,288.0 82.4,287.3 88.0,286.5 93.6,285.7 99.2,284.9 104.8,284.0 110.4,283.1 116.0,282.1 121.6,281.1 127.2,280.1 132.8,279.0 138.4,277.9 144.0,276.8 149.6,275.6 155.2,274.4 160.8,273.1 166.4,271.8 172.0,270.5 177.6,269.1 183.2,267.7 188.8,266.3 194.4,264.8 200.0,263.3 205.6,261.7 211.2,260.1 216.8,258.5 222.4,256.8 228.0,255.1 233.6,253.4 239.2,251.6 244.8,249.8 250.4,247.9 256.0,246.0 261.6,244.1 267.2,242.1 272.8,240.1 278.4,238.1 284.0,236.0 289.6,233.9 295.2,231.7 300.8,229.5 306.4,227.3 312.0,225.0 317.6,222.7 323.2,220.4 328.8,218.0 334.4,215.6 340.0,213.1 345.6,210.6 351.2,208.1 356.8,205.5 362.4,202.9 368.0,200.3 373.6,197.6 379.2,194.9 384.8,192.1 390.4,189.3 396.0,186.5 401.6,183.6 407.2,180.7 412.8,177.8 418.4,174.8 424.0,171.8 429.6,168.7 435.2,165.6 440.8,162.5 446.4,159.3 452.0,156.1 457.6,152.9 463.2,149.6 468.8,146.3 474.4,142.9 480.0,139.5 485.6,136.1 491.2,132.6 496.8,129.1 502.4,125.6 508.0,122.0 513.6,118.4 519.2,114.7 524.8,111.0 530.4,107.3 536.0,103.5 541.6,99.7 547.2,95.9 552.8,92.0 558.4,88.1 564.0,84.1 569.6,80.1 575.2,76.1 580.8,72.0 586.4,67.9 592.0,63.8 597.6,59.6 603.2,55.4 608.8,51.1 614.4,46.8 620.0,42.5"/>
+<polyline class="lnT" points="60.0,215.0 65.6,214.4 71.2,213.8 76.8,213.2 82.4,212.6 88.0,212.0 93.6,211.4 99.2,210.8 104.8,210.2 110.4,209.6 116.0,209.0 121.6,208.4 127.2,207.8 132.8,207.2 138.4,206.6 144.0,206.0 149.6,205.4 155.2,204.8 160.8,204.2 166.4,203.6 172.0,203.0 177.6,202.4 183.2,201.8 188.8,201.2 194.4,200.6 200.0,200.0 205.6,199.4 211.2,198.8 216.8,198.2 222.4,197.6 228.0,197.0 233.6,196.4 239.2,195.8 244.8,195.2 250.4,194.6 256.0,194.0 261.6,193.4 267.2,192.8 272.8,192.2 278.4,191.6 284.0,191.0 289.6,190.4 295.2,189.8 300.8,189.2 306.4,188.6 312.0,188.0 317.6,187.4 323.2,186.8 328.8,186.2 334.4,185.6 340.0,185.0 345.6,184.4 351.2,183.8 356.8,183.2 362.4,182.6 368.0,182.0 373.6,181.4 379.2,180.8 384.8,180.2 390.4,179.6 396.0,179.0 401.6,178.4 407.2,177.8 412.8,177.2 418.4,176.6 424.0,176.0 429.6,175.4 435.2,174.8 440.8,174.2 446.4,173.6 452.0,173.0 457.6,172.4 463.2,171.8 468.8,171.2 474.4,170.6 480.0,170.0 485.6,169.4 491.2,168.8 496.8,168.2 502.4,167.6 508.0,167.0 513.6,166.4 519.2,165.8 524.8,165.2 530.4,164.6 536.0,164.0 541.6,163.4 547.2,162.8 552.8,162.2 558.4,161.6 564.0,161.0 569.6,160.4 575.2,159.8 580.8,159.2 586.4,158.6 592.0,158.0 597.6,157.4 603.2,156.8 608.8,156.2 614.4,155.6 620.0,155.0"/>
+<line class="grid strong" x1="414.17509793885847" x2="414.17509793885847" y1="290.0" y2="20.0"/>
+<circle class="dot" cx="414.17509793885847" cy="177.05266807797943" r="4"/>
+<text class="ax" x="420.17509793885847" y="35.0">√(2aR) = 15.8 m/s</text>
+<text class="lbB" x="530.4" y="101.29999999999998" text-anchor="end">braking  v_cΔt + v_c²/2a</text>
+<text class="lbT" x="608.8" y="174.2" text-anchor="end">turning  v_cΔt + R</text>
+<text class="lbR" x="608.8" y="225.2" text-anchor="end">reaction only  v_cΔt</text>
+<text class="ax" x="228.0" y="65.0" text-anchor="middle">braking is shorter</text>
+<text class="ax" x="519.2" y="65.0" text-anchor="middle">turning is shorter</text>
+    </svg>
+    <figcaption>Head-on numbers from <code>params.py</code> (Δt = 1.6 s, a = 2.5 m/s², R = 50 m). Braking grows with v², turning only with v, so they cross at √(2aR) = 15.8 m/s. At 10 m/s braking needs 36 m and turning 66 m; at 20 m/s braking needs 112 m and turning 82 m. That is why scenario 2 (20 m/s at the building) turns instead of braking.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Where each box lives</h2>
+  <div class="tbl"><table>
+    <tr><th>File</th><th>Boxes in the chart</th><th>Course topic</th></tr>
+    <tr><td>sim.py</td><td>GNSS receiver, IMU, radar, <code>World.fly</code> (dashed boxes). Test data only: 30 GPS-like satellites, a sky mask for street canyons, one tower.</td><td>none (the simulated world)</td></tr>
+    <tr><td>gnss_lib_py_subset.py</td><td>Klobuchar, <code>wls()</code>, ECEF ↔ NED, elevation/azimuth. Copied from Stanford NAV Lab's gnss_lib_py (MIT), function bodies unchanged.</td><td>Ionosphere error, least squares, SPP, frame conversion</td></tr>
+    <tr><td>location.py</td><td>Flow 1: mask check, HDOP → σ_h, Doppler velocity, IMU weighting, dead reckoning. Flow 2: <code>radar_to_ned</code> with R_bs and R_nb.</td><td>Doppler solution, DOP, rotation matrices</td></tr>
+    <tr><td>zones.geojson</td><td>The eSUA no-entry polygon, lat/lon.</td><td>Frame conversion (geodetic → NED)</td></tr>
+    <tr><td>boundary.py</td><td>Zone and obstacle threats, the per-threat distances, the decision diamonds, the speed cap.</td><td>Applies the outputs</td></tr>
+    <tr><td>main.py</td><td>The loop arrow: one call per box, once per second. Also the four CLI flights and the API that <code>demo.html</code> calls.</td><td>—</td></tr>
+    <tr><td>params.py</td><td>Every fixed number: k = 3.03 (P = 10⁻⁴), Δt = 1.6 s, a, R, σ values.</td><td>—</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Frames used</h2>
+  <div class="tbl"><table>
+    <tr><th>From → to</th><th>Where</th><th>How</th></tr>
+    <tr><td>ECEF → NED</td><td>GNSS fix, satellite line-of-sight rows of H, Doppler velocity</td><td><code>LocalCoord</code> rotation about the PolyU origin (22.3045° N, 114.1800° E)</td></tr>
+    <tr><td>lat/lon → NED</td><td>zones.geojson corners</td><td>geodetic → ECEF → NED, same origin</td></tr>
+    <tr><td>body → NED</td><td>IMU acceleration, radar direction</td><td>R_nb = rot(heading)</td></tr>
+    <tr><td>sensor → body</td><td>radar bearing</td><td>R_bs = rot(mount angle), 0° for the magic radar</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Your brief vs what was built</h2>
+  <div class="tbl"><table class="brief">
+    <tr><th>You asked for</th><th>Built</th><th></th></tr>
+    <tr><td>Undergrad level</td><td>Only course topics: GNSS, least squares, SPP, Doppler, ionosphere, frames. Chi-square FDE, Kalman filter, NLOS canyon and the distance field were removed.</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>Removed features as plan</td><td><code>FUTURE_WORK.md</code>: 23 picked items in 6 phases, each pointing to the old code in commit f156a3b.</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>Two flows</td><td>Flow 1 GNSS → eSUA GeoJSON zones; Flow 2 magic radar → body frame → NED for buildings.</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>Existing GNSS repo</td><td>gnss_lib_py subset, bodies unchanged. Velocity is your own Doppler least squares (no library had one that fit).</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>Acceleration from GNSS</td><td>Taken from the IMU instead; differencing noisy GNSS velocity would add noise.</td><td><span class="pill part">changed</span></td></tr>
+    <tr><td>GNSS + IMU weighted</td><td>v = w·v_GNSS + (1−w)·v_IMU, w from the two σ values.</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>Braking + turning, anything else?</td><td>Added reaction distance (v·Δt) and the margin R + k·σ. Sensor range, wind and climbing are in FUTURE_WORK.</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>HTML: few parameters in a dropdown, rest predefined</td><td><code>demo.html</code> runs the real Python in Pyodide; 6 page parameters in a closed dropdown, turning radius etc. read-only.</td><td><span class="pill yes">done</span></td></tr>
+    <tr><td>params.py unchanged</td><td>The HTML never edits it, but the file was rewritten for the new design (eVTOL radius 3 m, a, R, radar).</td><td><span class="pill part">changed</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Presenting it in one minute</h2>
+  <ol class="talk">
+    <li>Every second the aircraft gets a GNSS epoch, an IMU reading and a radar scan.</li>
+    <li>Flow 1: remove the ionosphere with Klobuchar, solve SPP by least squares, and get σ_h from HDOP. Doppler least squares gives velocity, which is blended with the IMU.</li>
+    <li>The no-entry zone is a GeoJSON polygon. Its margin is aircraft size plus k·σ_h, so worse satellite geometry means a wider margin.</li>
+    <li>Flow 2: the radar reading is rotated from sensor to body to north/east. Its distance is measured directly, so GNSS error does not enter.</li>
+    <li>For each threat: room left, reaction distance, braking and turning distance. The most urgent threat picks CLEAR, BRAKE, TURN or RETURN.</li>
+    <li>Result: 4 scripted flights and 90 test runs up to 25 m/s, with no breach of the zone or the building.</li>
+  </ol>
+</section>
+</div>
+
+</html>
